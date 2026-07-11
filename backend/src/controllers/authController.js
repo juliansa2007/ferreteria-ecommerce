@@ -12,16 +12,16 @@ const { query } = require('../config/database');
 
 const register = async (req, res) => {
   try {
-    const { nombre, apellido, correo, contraseña } = req.body;
+    const { nombre, apellido, correo, contrasena} = req.body;
 
     // Validar que todos los campos existan
-    if (!nombre || !apellido || !correo || !contraseña) {
+    if (!nombre || !apellido || !correo || !contrasena) {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
 
     // Validar que contraseña tenga mínimo 7 caracteres
     if (contraseña.length < 7) {
-      return res.status(400).json({ error: 'Contraseña debe tener mínimo 7 caracteres' });
+      return res.status(400).json({ error: 'contrasena debe tener mínimo 7 caracteres' });
     }
 
     // Verificar que el correo NO exista ya
@@ -75,22 +75,22 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { correo, contraseña } = req.body;
+    const { correo, contrasena} = req.body;
 
     // Validar que ambos campos existan
     if (!correo || !contraseña) {
-      return res.status(400).json({ error: 'Correo y contraseña requeridos' });
+      return res.status(400).json({ error: 'Correo y contrasena requeridos' });
     }
 
     // Buscar usuario en BD
     const resultado = await query(
-      'SELECT id, correo, contraseña, rol FROM usuarios WHERE correo = $1',
+      'SELECT id, correo, contrasena, rol FROM usuarios WHERE correo = $1',
       [correo]
     );
 
     // Si no existe
     if (resultado.rows.length === 0) {
-      return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
+      return res.status(401).json({ error: 'Correo o contrasena incorrectos' });
     }
 
     const usuario = resultado.rows[0];
@@ -99,7 +99,7 @@ const login = async (req, res) => {
     const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseña);
 
     if (!contraseñaValida) {
-      return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
+      return res.status(401).json({ error: 'Correo o contrasena incorrectos' });
     }
 
     // Crear token JWT
