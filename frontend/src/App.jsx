@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Carrito from './pages/Carrito'
 import Checkout from './pages/Checkout'
 import Confirmacion from './pages/Confirmacion'
+import MisOrdenes from './pages/MisOrdenes'
 
 function Home() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
@@ -56,11 +57,13 @@ function App() {
             <div className="flex gap-4">
   <a href="/tienda" className="text-blue-600 hover:underline">Tienda</a>
   <a href="/carrito" className="text-blue-600 hover:underline">🛒 Carrito</a>
+  <a href="/mis-ordenes" className="text-blue-600 hover:underline">Mis Órdenes</a>
 </div>
           </nav>
         </header>
 
         <main className="max-w-7xl mx-auto">
+
           <Routes>
   <Route path="/" element={<Home />} />
   <Route path="/login" element={<Login />} />
@@ -69,6 +72,7 @@ function App() {
   <Route path="/carrito" element={<Carrito />} />
   <Route path="/checkout" element={<Checkout />} />
   <Route path="/confirmacion/:numeroOrden" element={<Confirmacion />} />
+  <Route path="/mis-ordenes" element={<MisOrdenes />} />
 </Routes>
         </main>
 

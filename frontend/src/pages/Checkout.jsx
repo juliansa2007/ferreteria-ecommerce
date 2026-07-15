@@ -10,6 +10,7 @@ export default function Checkout() {
   const [telefono, setTelefono] = useState('')
   const [direccion, setDireccion] = useState('')
   const [ciudad, setCiudad] = useState('')
+  const [metodoPago, setMetodoPago] = useState('efectivo')
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
 
@@ -24,9 +25,8 @@ export default function Checkout() {
 
     try {
       const token = localStorage.getItem('token')
-      console.log('Token:', token)
       
-      // 1. Crear orden
+      // Crear orden
       const resOrden = await axios.post(
         `${import.meta.env.VITE_API_URL}/ordenes`,
         {
@@ -34,42 +34,16 @@ export default function Checkout() {
           telefono,
           direccion,
           ciudad,
+          metodo_pago: metodoPago
         },
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
-      console.log('Orden creada:', resOrden.data)
-
-      // 2. Iniciar pago
-      const resPago = await axios.post(
-        `${import.meta.env.VITE_API_URL}/pagos/iniciar`,
-        { ordenId: resOrden.data.ordenId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-
-      console.log('Pago iniciado:', resPago.data)
-
-      // 3. Enviar a PayU con delay
-const form = document.createElement('form')
-form.method = 'POST'
-form.action = resPago.data.url
-form.target = '_self'
-
-for (const key in resPago.data.datos) {
-  const input = document.createElement('input')
-  input.type = 'hidden'
-  input.name = key
-  input.value = resPago.data.datos[key]
-  form.appendChild(input)
-}
-
-document.body.appendChild(form)
-setTimeout(() => {
-  form.submit()
-}, 500)
+      // Redirigir a confirmación
+      navigate(`/confirmacion/${resOrden.data.numeroOrden}`)
     } catch (err) {
-      console.error('Error:', err.response?.data || err)
       setError(err.response?.data?.error || 'Error al crear orden')
+    } finally {
       setCargando(false)
     }
   }
@@ -91,6 +65,7 @@ setTimeout(() => {
       <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Formulario */}
         <div>
           <h2 className="text-xl font-bold mb-4">Datos de envío</h2>
 
@@ -134,7 +109,7 @@ setTimeout(() => {
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-gray-700 font-bold mb-2">Ciudad</label>
               <input
                 type="text"
@@ -145,18 +120,33 @@ setTimeout(() => {
               />
             </div>
 
+            <div className="mb-6">
+              <label className="block text-gray-700 font-bold mb-2">Método de Pago (Contra Entrega)</label>
+              <select
+                value={metodoPago}
+                onChange={(e) => setMetodoPago(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded"
+              >
+                <option value="efectivo">💵 Efectivo</option>
+                <option value="nequi">📱 Nequi</option>
+                <option value="bancaria">🏦 Transferencia Bancaria</option>
+                <option value="daviplata">💳 Daviplata</option>
+              </select>
+            </div>
+
             <button
               type="submit"
               disabled={cargando}
               className="w-full bg-green-600 text-white font-bold py-2 rounded hover:bg-green-700 disabled:opacity-50"
             >
-              {cargando ? 'Procesando...' : 'Continuar a pago'}
+              {cargando ? 'Procesando...' : 'Confirmar Orden'}
             </button>
           </form>
         </div>
 
+        {/* Resumen */}
         <div>
-          <h2 className="text-xl font-bold mb-4">Resumen</h2>
+          <h2 className="text-xl font-bold mb-4">Resumen de Compra</h2>
 
           <div className="bg-gray-100 p-4 rounded mb-4">
             {items.map(item => (
@@ -175,16 +165,18 @@ setTimeout(() => {
                 <span>IVA (19%):</span>
                 <span>${(total - total / 1.19).toLocaleString('es-CO')}</span>
               </div>
-              <div className="flex justify-between font-bold text-lg">
-                <span>Total:</span>
+              <div className="flex justify-between font-bold text-lg text-green-600">
+                <span>Total a pagar:</span>
                 <span>${total.toLocaleString('es-CO')}</span>
               </div>
             </div>
           </div>
 
-          <a href="/carrito" className="text-blue-600 hover:underline">
-            ← Volver al carrito
-          </a>
+          <div className="bg-blue-50 p-4 rounded">
+            <p className="text-sm text-gray-600">
+              <strong>ℹ️ Pago Contra Entrega:</strong> Pagarás cuando recibas tu orden en la dirección indicada, por el método que seleccionaste.
+            </p>
+          </div>
         </div>
       </div>
     </div>
