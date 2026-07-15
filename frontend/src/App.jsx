@@ -8,6 +8,7 @@ import Checkout from './pages/Checkout'
 import Confirmacion from './pages/Confirmacion'
 import MisOrdenes from './pages/MisOrdenes'
 import DashboardAdmin from './pages/DashboardAdmin'
+import AdminProductos from './pages/AdminProductos'
 
 function Home() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
@@ -61,9 +62,14 @@ function App() {
   <a href="/carrito" className="text-blue-600 hover:underline">🛒 Carrito</a>
   <a href="/mis-ordenes" className="text-blue-600 hover:underline">Mis Órdenes</a>
   {usuario?.rol === 'admin' && (
-  <a href="/dashboard-admin" className="text-red-600 hover:underline font-bold">
-    🔧 Admin
-  </a>
+  <div className="flex gap-2">
+    <a href="/dashboard-admin" className="text-red-600 hover:underline font-bold">
+      🔧 Órdenes
+    </a>
+    <a href="/admin-productos" className="text-red-600 hover:underline font-bold">
+      📦 Productos
+    </a>
+  </div>
 )}
 </div>
           </nav>
@@ -81,6 +87,7 @@ function App() {
   <Route path="/confirmacion/:numeroOrden" element={<Confirmacion />} />
   <Route path="/mis-ordenes" element={<MisOrdenes />} />
   <Route path="/dashboard-admin" element={<DashboardAdmin />} />s
+  <Route path="/admin-productos" element={<AdminProductos />} />
 </Routes>
         </main>
 

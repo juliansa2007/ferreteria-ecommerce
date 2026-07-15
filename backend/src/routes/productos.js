@@ -1,15 +1,24 @@
 const express = require('express');
-const { obtenerProductos, obtenerProductoId, obtenerPorCategoria } = require('../controllers/productoController');
-const { obtenerCategorias } = require('../controllers/categoriaController');
+const autenticacion = require('../middleware/autenticacion');
+const { 
+  listarProductos, 
+  listarCategorias, 
+  obtenerPorCategoria,
+  crearProducto,
+  editarProducto,
+  eliminarProducto
+} = require('../controllers/productoController');
 
 const router = express.Router();
 
-// Rutas de categorías
-router.get('/categorias', obtenerCategorias);
+// Rutas públicas
+router.get('/', listarProductos);
+router.get('/categorias', listarCategorias);
+router.get('/categoria/:id', obtenerPorCategoria);
 
-// Rutas de productos
-router.get('/', obtenerProductos);
-router.get('/:id', obtenerProductoId);
-router.get('/categoria/:categoriaId', obtenerPorCategoria);
+// Rutas de admin
+router.post('/', autenticacion, crearProducto);
+router.put('/:id', autenticacion, editarProducto);
+router.delete('/:id', autenticacion, eliminarProducto);
 
 module.exports = router;
