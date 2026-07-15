@@ -6,9 +6,9 @@ export default function Tienda() {
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null)
+  const [busqueda, setBusqueda] = useState('')
   const [cargando, setCargando] = useState(true)
 
-  // Cargar categorías y productos
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -30,16 +30,27 @@ export default function Tienda() {
     cargarDatos()
   }, [])
 
-  // Filtrar productos por categoría
-  const productosFiltrados = categoriaSeleccionada
-    ? productos.filter(p => p.categoria_id === categoriaSeleccionada)
-    : productos
+  // Filtrar por categoría Y búsqueda
+  const productosFiltrados = productos
+    .filter(p => !categoriaSeleccionada || p.categoria_id === categoriaSeleccionada)
+    .filter(p => p.nombre.toLowerCase().includes(busqueda.toLowerCase()))
 
   if (cargando) return <div className="p-8">Cargando...</div>
 
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-8">Tienda</h1>
+
+      {/* Buscador */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="🔍 Buscar producto..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="w-full px-4 py-2 border rounded"
+        />
+      </div>
 
       {/* Filtros por categoría */}
       <div className="mb-8 flex gap-2 flex-wrap">
@@ -84,30 +95,30 @@ export default function Tienda() {
               Stock: {producto.stock}
             </p>
             <input
-  type="number"
-  min="1"
-  max={producto.stock}
-  defaultValue="1"
-  id={`cant-${producto.id}`}
-  className="w-full border border-gray-300 p-2 rounded mb-2"
-/>
-<button
-  onClick={() => {
-    const cantidad = parseInt(document.getElementById(`cant-${producto.id}`).value);
-    useCarritoStore.getState().agregarProducto(producto.id, cantidad);
-    alert('Agregado al carrito');
-  }}
-  className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
->
-  Agregar al carrito
-</button>
+              type="number"
+              min="1"
+              max={producto.stock}
+              defaultValue="1"
+              id={`cant-${producto.id}`}
+              className="w-full border border-gray-300 p-2 rounded mb-2"
+            />
+            <button
+              onClick={() => {
+                const cantidad = parseInt(document.getElementById(`cant-${producto.id}`).value)
+                useCarritoStore.getState().agregarProducto(producto.id, cantidad)
+                alert('Agregado al carrito')
+              }}
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            >
+              Agregar al carrito
+            </button>
           </div>
         ))}
       </div>
 
       {productosFiltrados.length === 0 && (
         <div className="text-center text-gray-600 py-8">
-          No hay productos en esta categoría
+          No hay productos que coincidan con tu búsqueda
         </div>
       )}
     </div>
