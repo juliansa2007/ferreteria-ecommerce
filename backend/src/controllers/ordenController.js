@@ -1,12 +1,11 @@
 const { query } = require('../config/database');
 
-// Crear orden
 const crearOrden = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
-    const { nombre_envio, telefono, direccion, ciudad } = req.body;
+    const { nombre_envio, telefono, direccion, ciudad, metodo_pago } = req.body;
 
-    if (!nombre_envio || !telefono || !direccion || !ciudad) {
+    if (!nombre_envio || !telefono || !direccion || !ciudad || !metodo_pago) {
       return res.status(400).json({ error: 'Faltan campos requeridos' });
     }
 
@@ -32,23 +31,23 @@ const crearOrden = async (req, res) => {
       return res.status(400).json({ error: 'Carrito sin productos' });
     }
 
-    // Calcular subtotal
+    // Calcular totales
     const subtotal = items.rows.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
     const impuesto = subtotal * 0.19;
     const total = subtotal + impuesto;
 
-    // Crear número de orden único
+    // Crear número de orden
     const numeroOrden = `ORD-${Date.now()}`;
 
     // Insertar orden
     const orden = await query(
       `INSERT INTO ordenes 
        (numero_orden, usuario_id, carrito_id, subtotal, impuesto, total_cop, 
-        direccion_entrega, ciudad_entrega, estado)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        metodo_pago, estado, direccion_entrega, ciudad_entrega)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id, numero_orden, total_cop`,
       [numeroOrden, usuarioId, carritoId, subtotal, impuesto, total, 
-       direccion, ciudad, 'pendiente']
+       metodo_pago, 'pendiente_pago', direccion, ciudad]
     );
 
     const ordenId = orden.rows[0].id;
@@ -73,7 +72,7 @@ const crearOrden = async (req, res) => {
     await query('UPDATE carritos SET activo = false WHERE id = $1', [carritoId]);
 
     res.json({
-      mensaje: 'Orden creada',
+      mensaje: 'Orden creada exitosamente',
       ordenId,
       numeroOrden: orden.rows[0].numero_orden,
       total: orden.rows[0].total_cop,
@@ -84,7 +83,6 @@ const crearOrden = async (req, res) => {
   }
 };
 
-// Obtener órdenes del usuario
 const obtenerOrdenes = async (req, res) => {
   try {
     const usuarioId = req.usuario.id;
@@ -96,11 +94,65 @@ const obtenerOrdenes = async (req, res) => {
 
     res.json(ordenes.rows);
   } catch (err) {
+    console.error('Error:', err);
     res.status(500).json({ error: 'Error al obtener órdenes' });
+  }
+};
+// Obtener TODAS las órdenes (solo admin)
+const obtenerTodasLasOrdenes = async (req, res) => {
+  try {
+    // Verificar que sea admin
+    if (req.usuario.rol !== 'admin') {
+      return res.status(403).json({ error: 'No tienes permiso' });
+    }
+
+    const ordenes = await query(
+      `SELECT o.id, o.numero_orden, o.total_cop, o.estado, o.fecha_creacion, 
+              u.correo as correo_usuario
+       FROM ordenes o
+       JOIN usuarios u ON o.usuario_id = u.id
+       ORDER BY o.fecha_creacion DESC`,
+      []
+    );
+
+    res.json(ordenes.rows);
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Error al obtener órdenes' });
+  }
+};
+
+// Cambiar estado de orden (solo admin)
+const cambiarEstadoOrden = async (req, res) => {
+  try {
+    // Verificar que sea admin
+    if (req.usuario.rol !== 'admin') {
+      return res.status(403).json({ error: 'No tienes permiso' });
+    }
+
+    const { id } = req.params;
+    const { estado } = req.body;
+
+    const estadosValidos = ['pendiente_pago', 'pagada', 'enviada', 'entregada'];
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ error: 'Estado inválido' });
+    }
+
+    await query(
+      'UPDATE ordenes SET estado = $1 WHERE id = $2',
+      [estado, id]
+    );
+
+    res.json({ mensaje: 'Estado actualizado' });
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Error al cambiar estado' });
   }
 };
 
 module.exports = {
   crearOrden,
   obtenerOrdenes,
+  obtenerTodasLasOrdenes,
+  cambiarEstadoOrden,
 };

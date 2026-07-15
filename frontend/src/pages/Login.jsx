@@ -5,7 +5,7 @@ import axios from 'axios'
 export default function Login() {
   const navigate = useNavigate()
   const [correo, setCorreo] = useState('')
-  const [contraseña, setContraseña] = useState('')
+  const [contrasena, setcontrasena] = useState('')
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
 
@@ -17,7 +17,7 @@ export default function Login() {
     try {
       const respuesta = await axios.post(
         `${import.meta.env.VITE_API_URL}/auth/login`,
-        { correo, contraseña }
+        { correo, contrasena }
       )
 
       // Guardar token en localStorage
@@ -57,13 +57,13 @@ export default function Login() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-gray-700 font-bold mb-2">Contraseña</label>
+            <label className="block text-gray-700 font-bold mb-2">contrasena</label>
             <input
               type="password"
-              value={contraseña}
-              onChange={(e) => setContraseña(e.target.value)}
+              value={contrasena}
+              onChange={(e) => setcontrasena(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-              placeholder="Tu contraseña"
+              placeholder="Tu contrasena"
             />
           </div>
 

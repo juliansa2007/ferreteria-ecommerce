@@ -7,6 +7,7 @@ import Carrito from './pages/Carrito'
 import Checkout from './pages/Checkout'
 import Confirmacion from './pages/Confirmacion'
 import MisOrdenes from './pages/MisOrdenes'
+import DashboardAdmin from './pages/DashboardAdmin'
 
 function Home() {
   const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
@@ -46,6 +47,7 @@ function Home() {
 }
 
 function App() {
+  const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
@@ -58,6 +60,11 @@ function App() {
   <a href="/tienda" className="text-blue-600 hover:underline">Tienda</a>
   <a href="/carrito" className="text-blue-600 hover:underline">🛒 Carrito</a>
   <a href="/mis-ordenes" className="text-blue-600 hover:underline">Mis Órdenes</a>
+  {usuario?.rol === 'admin' && (
+  <a href="/dashboard-admin" className="text-red-600 hover:underline font-bold">
+    🔧 Admin
+  </a>
+)}
 </div>
           </nav>
         </header>
@@ -73,6 +80,7 @@ function App() {
   <Route path="/checkout" element={<Checkout />} />
   <Route path="/confirmacion/:numeroOrden" element={<Confirmacion />} />
   <Route path="/mis-ordenes" element={<MisOrdenes />} />
+  <Route path="/dashboard-admin" element={<DashboardAdmin />} />s
 </Routes>
         </main>
 
