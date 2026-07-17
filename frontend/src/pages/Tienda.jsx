@@ -83,9 +83,17 @@ export default function Tienda() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {productosFiltrados.map(producto => (
           <div key={producto.id} className="bg-white rounded-lg shadow p-4">
-            <div className="bg-gray-200 h-48 rounded mb-4 flex items-center justify-center">
-              <span className="text-gray-400">Sin imagen</span>
-            </div>
+            <div className="bg-gray-200 h-48 rounded mb-4 flex items-center justify-center overflow-hidden">
+  {producto.imagen ? (
+    <img 
+  src={`${import.meta.env.VITE_API_BASE}${producto.imagen}`}
+  alt={producto.nombre}
+  className="w-full h-full object-contain"
+/>
+  ) : (
+    <span className="text-gray-400">Sin imagen</span>
+  )}
+</div>
             <h3 className="font-bold text-lg">{producto.nombre}</h3>
             <p className="text-gray-600 text-sm mb-2">{producto.marca}</p>
             <p className="text-blue-600 font-bold text-xl mb-2">

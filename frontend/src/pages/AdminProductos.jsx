@@ -9,6 +9,7 @@ export default function AdminProductos() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [busqueda, setBusqueda] = useState('')
   const [productoEditandoId, setProductoEditandoId] = useState(null)
+  const [imagenArchivo, setImagenArchivo] = useState(null)
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -55,23 +56,38 @@ export default function AdminProductos() {
   try {
     const token = localStorage.getItem('token')
     
+    // Crear FormData para enviar archivo
+    const formDataToSend = new FormData()
+    formDataToSend.append('nombre', formData.nombre)
+    formDataToSend.append('descripcion', formData.descripcion)
+    formDataToSend.append('categoria_id', formData.categoria_id)
+    formDataToSend.append('precio_cop', formData.precio_cop)
+    formDataToSend.append('stock', formData.stock)
+    formDataToSend.append('marca', formData.marca)
+    
+    // Agregar imagen si la hay
+    if (imagenArchivo) {
+      formDataToSend.append('imagen', imagenArchivo)
+    }
+    
     if (productoEditandoId) {
-      // EDITAR producto existente
+      // EDITAR
       await axios.put(
         `${import.meta.env.VITE_API_URL}/productos/${productoEditandoId}`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        formDataToSend,
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
       )
     } else {
-      // CREAR producto nuevo
+      // CREAR
       await axios.post(
         `${import.meta.env.VITE_API_URL}/productos`,
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        formDataToSend,
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
       )
     }
     
     setFormData({ nombre: '', descripcion: '', categoria_id: '', precio_cop: '', stock: '', marca: '' })
+    setImagenArchivo(null)
     setProductoEditandoId(null)
     setMostrarFormulario(false)
     cargarDatos()
@@ -181,6 +197,12 @@ const handleEliminar = async (id) => {
                 onChange={handleChange}
                 className="px-3 py-2 border rounded"
               />
+              <input
+                 type="file"
+                accept="image/*"
+                onChange={(e) => setImagenArchivo(e.target.files[0])}
+                className="px-3 py-2 border rounded"
+             />
             </div>
             <textarea
               name="descripcion"

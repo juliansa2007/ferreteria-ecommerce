@@ -1,4 +1,5 @@
 const express = require('express');
+const upload = require('../config/multer');
 const autenticacion = require('../middleware/autenticacion');
 const { 
   listarProductos, 
@@ -17,8 +18,8 @@ router.get('/categorias', listarCategorias);
 router.get('/categoria/:id', obtenerPorCategoria);
 
 // Rutas de admin
-router.post('/', autenticacion, crearProducto);
-router.put('/:id', autenticacion, editarProducto);
+router.post('/', autenticacion, upload.single('imagen'), crearProducto);
+router.put('/:id', autenticacion, upload.single('imagen'), editarProducto);
 router.delete('/:id', autenticacion, eliminarProducto);
 
 module.exports = router;
